@@ -1,31 +1,31 @@
 import java.util.HashMap;
 import java.util.HashSet;
+
 class Solution {
-    public int[] solution(String[] gems) {
+    public static int[] solution(String[] gems) {
         int[] answer = new int[2];
 
         HashSet<String> set = new HashSet<>();
-        for (int i = 0; i < gems.length; i++) {
+        for (int i = 0; i < gems.length; i++)
             set.add(gems[i]);
-        }
 
-        int size = set.size();
+        int variety = set.size();
 
-        HashMap<String, Integer> map = new HashMap<>();
-        int l = 0;
+        int from = 0;
         int length = Integer.MAX_VALUE;
-        for (int r = 0; r < gems.length; r++) {
-            map.put(gems[r], map.getOrDefault(gems[r], 0) + 1);
+        HashMap<String, Integer> map = new HashMap<>();
+        for (int to = 0; to < gems.length; to++) {
+            map.put(gems[to], map.getOrDefault(gems[to], 0) + 1);
 
-            while(map.get(gems[l]) > 1){
-                map.put(gems[l], map.get(gems[l])-1);
-                l++;
+            while (map.get(gems[from]) > 1) {
+                map.replace(gems[from], map.get(gems[from]), map.get(gems[from]) - 1);
+                from++;
             }
 
-            if(map.size() == size && length > r - l){
-                length = r - l;
-                answer[0] = l + 1;
-                answer[1] = r + 1;
+            if (map.size() == variety && length > (to - from + 1)) {
+                length = to - from + 1;
+                answer[0] = from + 1;
+                answer[1] = to + 1;
             }
         }
 
