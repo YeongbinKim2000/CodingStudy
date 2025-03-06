@@ -1,42 +1,42 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine(), " ");
-
-        int n = Integer.parseInt(st.nextToken());
-        int[] arr = new int[n];
+        StringTokenizer st;
+        
+        int n = Integer.parseInt(br.readLine());
+        int[] nums = new int[n];
         st = new StringTokenizer(br.readLine(), " ");
         for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(st.nextToken());
+            nums[i] = Integer.parseInt(st.nextToken());
         }
-        Arrays.sort(arr);
-
-        st = new StringTokenizer(br.readLine());
-        int m = Integer.parseInt(st.nextToken());
+        Arrays.sort(nums);
+        
+        int m = Integer.parseInt(br.readLine());
         st = new StringTokenizer(br.readLine(), " ");
         for (int i = 0; i < m; i++) {
             int target = Integer.parseInt(st.nextToken());
-            int from = 0;
-            int to = arr.length - 1;
+            
+            int l = 0;
+            int r = n - 1;
             boolean find = false;
-            while (from <= to) {
-                int mid = (from + to) / 2;
-                if (target == arr[mid]) {
+            while (l <= r) {
+                int mid = (l + r) / 2;
+                if (nums[mid] == target) {
                     find = true;
-                    System.out.println(1);
                     break;
-                } else if (target > arr[mid])
-                    from = mid + 1;
-                else
-                    to = mid - 1;
+                } else if (nums[mid] > target) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
             }
-            if (!find)
+            
+            if (find)
+                System.out.println(1);
+            else
                 System.out.println(0);
         }
     }
