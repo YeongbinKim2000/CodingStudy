@@ -1,40 +1,36 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashSet;
+import java.util.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
         int n = Integer.parseInt(br.readLine());
+
         int[] arr = new int[n];
-        for (int i = 0; i < arr.length; i++) {
+        for (int i = 0; i < n; i++) {
             arr[i] = Integer.parseInt(br.readLine());
         }
+        Arrays.sort(arr);
 
-        HashSet<Integer> sums = new HashSet<>();
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = i; j < arr.length; j++) {
-                int sum = arr[i] + arr[j];
-                sums.add(sum);
+        // Store all possible sums of two numbers
+        HashSet<Integer> setA = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                setA.add(arr[i] + arr[j]);
             }
         }
 
-        int max = Integer.MIN_VALUE;
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = i; j < arr.length; j++) {
-                int sum1 = arr[i] - arr[j];
-                int sum2 = arr[j] - arr[i];
-                if (sums.contains(sum1))
-                    max = Math.max(max, arr[i]);
-
-                if (sums.contains(sum2))
-                    max = Math.max(max, arr[j]);
+        int maxD = 0;
+        // Find the maximum d where d = arr[k] and d = x + y exists in setA
+        for (int k = n - 1; k >= 0; k--) {
+            for (int i = 0; i < k; i++) {
+                int diff = arr[k] - arr[i];
+                if (setA.contains(diff)) {
+                    maxD = arr[k];
+                    System.out.println(maxD);
+                    return;
+                }
             }
         }
-
-        System.out.println(max);
     }
-
 }
