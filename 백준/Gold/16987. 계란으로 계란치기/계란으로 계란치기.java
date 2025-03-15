@@ -1,67 +1,66 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.*;
 
 public class Main {
+    static int n;
     static int max;
-    
+    static int[] strengths;
+    static int[] weights;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
 
-        int n = Integer.parseInt(br.readLine());
-        int[] eggStrengths = new int[n];
-        int[] eggWeights = new int[n];
-
+        n = Integer.parseInt(br.readLine());
+        strengths = new int[n];
+        weights = new int[n];
         max = 0;
 
         for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine(), " ");
-            eggStrengths[i] = Integer.parseInt(st.nextToken());
-            eggWeights[i] = Integer.parseInt(st.nextToken());
+            strengths[i] = Integer.parseInt(st.nextToken());
+            weights[i] = Integer.parseInt(st.nextToken());
         }
 
-        play(eggStrengths, eggWeights, 0, n);
+        play(0);
         System.out.println(max);
     }
 
-    private static void play(int[] eggStrengths, int[] eggWeights, int idx, int n) {
-        if (idx == n) {  // 종료 조건
-            int brokenCnt = 0;
-            for (int strength : eggStrengths) {
-                if (strength <= 0)
-                    brokenCnt++;
+    private static void play(int idx) {
+        if (idx == n) {
+            int cnt = 0;
+            for (int i = 0; i < n; i++) {
+                if (strengths[i] <= 0) cnt++;
             }
-            max = Math.max(max, brokenCnt);
+            max = Math.max(max, cnt);
             return;
         }
 
-        // 현재 계란이 깨졌다면 다음 계란으로
-        if (eggStrengths[idx] <= 0) {
-            play(eggStrengths, eggWeights, idx + 1, n);
+        // 현재 계란이 깨진 경우 다음 계란으로 이동
+        if (strengths[idx] <= 0) {
+            play(idx + 1);
             return;
         }
 
-        boolean isHit = false;  // 계란을 부딪혔는지 확인
-
+        boolean hit = false;
         for (int i = 0; i < n; i++) {
-            if (i != idx && eggStrengths[i] > 0) { // 다른 깨지지 않은 계란 선택
-                isHit = true;
+            if (i == idx || strengths[i] <= 0) continue; // 자기 자신을 때릴 수 없고, 이미 깨진 계란은 무시
 
-                eggStrengths[i] -= eggWeights[idx];
-                eggStrengths[idx] -= eggWeights[i];
+            hit = true;
+            int originalIdxStrength = strengths[idx];
+            int originalIStrength = strengths[i];
 
-                play(eggStrengths, eggWeights, idx + 1, n);
+            strengths[idx] -= weights[i];
+            strengths[i] -= weights[idx];
 
-                eggStrengths[i] += eggWeights[idx]; // 상태 복구
-                eggStrengths[idx] += eggWeights[i];
-            }
+            play(idx + 1);
+
+            // 원래 값 복원 (백트래킹)
+            strengths[idx] = originalIdxStrength;
+            strengths[i] = originalIStrength;
         }
 
-        // 부딪힐 계란이 없으면 다음 계란으로
-        if (!isHit) {
-            play(eggStrengths, eggWeights, idx + 1, n);
-        }
+        // 단 한 번도 다른 계란을 치지 못한 경우 다음 계란으로 이동
+        if (!hit) play(idx + 1);
     }
 }
