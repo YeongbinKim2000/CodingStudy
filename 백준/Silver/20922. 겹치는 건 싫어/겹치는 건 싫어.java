@@ -1,8 +1,5 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -14,37 +11,40 @@ public class Main {
 
         int[] arr = new int[n];
         st = new StringTokenizer(br.readLine(), " ");
-        for (int i = 0; i < arr.length; i++)
+        for (int i = 0; i < n; i++)
             arr[i] = Integer.parseInt(st.nextToken());
 
-        int maxLength = Integer.MIN_VALUE;
-
         HashMap<Integer, Integer> map = new HashMap<>();
-        int i = 0;
-        int j = 1;
-        int curLength = 1;
-        map.put(arr[i], 1);
-        while (j < arr.length) {
-            if (!map.containsKey(arr[j]) || map.get(arr[j]) < k) {
-                map.put(arr[j], map.getOrDefault(arr[j], 0) + 1);
-                j++;
-                curLength++;
-                if (j == arr.length)
-                    maxLength = Math.max(maxLength, curLength);
-                continue;
-            }
+        int l = 0;
+        int r = 0;
+        map.put(arr[l], 1);
+        int max = 1;
 
-            maxLength = Math.max(maxLength, curLength);
-            while (map.get(arr[j]) >= k) {
-                map.replace(arr[i], map.get(arr[i]), map.get(arr[i]) - 1);
-                i++;
-                curLength--;
+        while (true) {
+            r++;
+            if (r == n) {
+                if (max == 1)
+                    max = Math.max(max, r - l);
+                break;
             }
-            map.put(arr[j], map.getOrDefault(arr[j], 0) + 1);
-            j++;
-            curLength++;
+            int add = arr[r];
+            if (!map.containsKey(add)) {
+                map.put(add, 1);
+            } else if (map.get(add) == k) {
+                max = Math.max(max, r - l);
+                while (arr[l] != add) {
+                    map.replace(arr[l], map.get(arr[l]), map.get(arr[l]) - 1);
+                    l++;
+                }
+                map.replace(arr[l], map.get(arr[l]), map.get(arr[l]) - 1);
+                map.replace(add, map.get(add), map.get(add) + 1);
+                l++;
+            } else {
+                map.replace(add, map.get(add), map.get(add) + 1);
+            }
+            max = Math.max(max, r - l + 1);
         }
 
-        System.out.println(maxLength);
+        System.out.println(max);
     }
 }
