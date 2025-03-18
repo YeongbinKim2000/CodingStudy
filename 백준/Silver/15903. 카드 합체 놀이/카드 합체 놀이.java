@@ -1,8 +1,5 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.PriorityQueue;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -14,21 +11,24 @@ public class Main {
 
         PriorityQueue<Long> pq = new PriorityQueue<>();
         st = new StringTokenizer(br.readLine(), " ");
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++) {
             pq.add(Long.parseLong(st.nextToken()));
+        }
 
         for (int i = 0; i < m; i++) {
             long a = pq.poll();
             long b = pq.poll();
-            long temp = a + b;
-            pq.add(temp);
-            pq.add(temp);
+
+            long sum = a + b;
+            pq.add(sum);
+            pq.add(sum);
         }
 
-        long sum = 0;
-        while (!pq.isEmpty())
-            sum += pq.poll();
+        long ans = 0;
+        while (!pq.isEmpty()) {
+            ans += pq.poll();
+        }
 
-        System.out.println(sum);
+        System.out.println(ans);
     }
 }
