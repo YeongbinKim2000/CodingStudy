@@ -63,7 +63,7 @@ public class Main {
             for (int i = 0; i < graph[curValue].size(); i++) {
                 Node1 nextNode = graph[curValue].get(i);
 
-                if (!visited[nextNode.v] && dist[nextNode.v] > curNode.cost + nextNode.cost) {
+                if (!visited[nextNode.v] && dist[nextNode.v] > dist[curNode.v] + nextNode.cost) {
                     dist[nextNode.v] = curNode.cost + nextNode.cost;
                     pq.add(new Node1(nextNode.v, dist[nextNode.v]));
                 }
