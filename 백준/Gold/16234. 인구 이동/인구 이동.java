@@ -1,11 +1,15 @@
-import java.util.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.StringTokenizer;
 
 public class Main {
     static int n;
-    static int[][] map;
     static int l;
     static int r;
+    static int[][] map;
     static int[] dx = {0, 1, 0, -1};
     static int[] dy = {1, 0, -1, 0};
     public static void main(String[] args) throws IOException {
@@ -19,14 +23,13 @@ public class Main {
         map = new int[n][n];
         for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine(), " ");
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < n; j++)
                 map[i][j] = Integer.parseInt(st.nextToken());
-            }
         }
 
         int day = 0;
         while (true) {
-            if (!move())
+            if(!move())
                 break;
             day++;
         }
@@ -35,65 +38,54 @@ public class Main {
     }
 
     private static boolean move() {
-        boolean possible = false;
-        boolean[][] visited = new boolean[n][n];
+        boolean canMove = false;
+        boolean[][] checked = new boolean[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (!visited[i][j]) {
-                    Stack<int[]> stored = new Stack<>();
-                    Queue<int[]> unions = new LinkedList<>();
+                if (!checked[i][j]) {
+                    checked[i][j] = true;
                     int sum = map[i][j];
-                    int size = 1;
-                    unions.add(new int[] {i, j, map[i][j]});
-                    stored.add(new int[] {i, j});
-                    visited[i][j] = true;
-
-                    while (!unions.isEmpty()) {
-                        int[] cur = unions.poll();
+                    Queue<int[]> union = new LinkedList<>();
+                    union.add(new int[] {i, j});
+                    Queue<int[]> queue = new LinkedList<>();
+                    queue.add(new int[] {i, j});
+                    while (!queue.isEmpty()) {
+                        int[] cur = queue.poll();
                         int curX = cur[0];
                         int curY = cur[1];
-                        int curPpl = cur[2];
 
                         for (int k = 0; k < 4; k++) {
                             int nextX = curX + dx[k];
                             int nextY = curY + dy[k];
 
-                            if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n || visited[nextX][nextY])
+                            if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n || checked[nextX][nextY])
                                 continue;
 
-                            int nextPpl = map[nextX][nextY];
-                            if (Math.abs(curPpl - nextPpl) < l || Math.abs(curPpl - nextPpl) > r)
-                                continue;
-
-                            unions.add(new int[] {nextX, nextY, nextPpl});
-                            stored.add(new int[] {nextX, nextY});
-                            visited[nextX][nextY] = true;
-                            size++;
-                            sum += nextPpl;
+                            int diff = Math.abs(map[curX][curY] - map[nextX][nextY]);
+                            if (diff >= l && diff <= r) {
+                                union.add(new int[] {nextX, nextY});
+                                checked[nextX][nextY] = true;
+                                queue.add(new int[] {nextX, nextY});
+                                sum += map[nextX][nextY];
+                            }
                         }
                     }
 
-                    if (stored.size() > 1)
-                        possible = true;
+                    if (union.size() > 1) {
+                        canMove = true;
+                        int divide = sum / union.size();
+                        while (!union.isEmpty()) {
+                            int[] cur = union.poll();
+                            int curX = cur[0];
+                            int curY = cur[1];
 
-                    while (!stored.isEmpty()) {
-                        int[] cur = stored.pop();
-                        int curX = cur[0];
-                        int curY = cur[1];
-
-                        map[curX][curY] = sum / size;
+                            map[curX][curY] = divide;
+                        }
                     }
                 }
             }
         }
 
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < n; j++) {
-//                System.out.print(map[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
-
-        return possible;
+        return canMove;
     }
 }
