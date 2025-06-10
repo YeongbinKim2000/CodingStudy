@@ -55,25 +55,6 @@ public class Main {
             sharkMove();
             removeSmell();
             getCopy();
-
-//            System.out.println("round: " + round);
-//            for (int i = 0; i < 4; i++) {
-//                for (int j = 0; j < 4; j++) {
-//                    System.out.print((i + 1) + " " + (j + 1) + ": ");
-//                    for (int k = 1; k <= 8; k++)
-//                        System.out.print(newFishMap[i][j].get(0)[k] + " ");
-//                    System.out.println();
-//                }
-//            }
-//            System.out.println("shark: " + (sharkX + 1)+ " " + (sharkY + 1));
-//            System.out.println();
-//            for (int i = 0; i < 4; i++) {
-//                for (int j = 0; j < 4; j++) {
-//                    System.out.print(smellMap[i][j] + " ");
-//                }
-//                System.out.println();
-//            }
-//            System.out.println();
         }
 
         int cnt = 0;
