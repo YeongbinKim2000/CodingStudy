@@ -4,30 +4,39 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Main {
+    static int n;
+    static int m;
+    static int[][] map;
+    static int fuel;
+    static int taxiX;
+    static int taxiY;
+    static Passenger[] passengers;
+    static int[][] fromMap;
     static int[] dx = {0, 1, 0, -1};
     static int[] dy = {1, 0, -1, 0};
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine(), " ");
 
-        int n = Integer.parseInt(st.nextToken());
-        int m = Integer.parseInt(st.nextToken());
-        int k = Integer.parseInt(st.nextToken());
+        n = Integer.parseInt(st.nextToken());
+        m = Integer.parseInt(st.nextToken());
+        fuel = Integer.parseInt(st.nextToken());
 
-        int[][] map = new int[n][n];
+        map = new int[n][n];
         for (int i = 0; i < n; i++) {
             st = new StringTokenizer(br.readLine(), " ");
-            for (int j = 0; j < n; j++)
+            for (int j = 0; j < n; j++) {
                 map[i][j] = Integer.parseInt(st.nextToken());
+            }
         }
 
         st = new StringTokenizer(br.readLine(), " ");
-        int taxiX = Integer.parseInt(st.nextToken()) - 1;
-        int taxiY = Integer.parseInt(st.nextToken()) - 1;
+        taxiX = Integer.parseInt(st.nextToken()) - 1;
+        taxiY = Integer.parseInt(st.nextToken()) - 1;
 
-        Taxi taxi = new Taxi(taxiX, taxiY, k);
-
-        Passenger[] passengers = new Passenger[m + 1];
+        passengers = new Passenger[m + 1];
+        fromMap = new int[n][n];
         for (int i = 1; i <= m; i++) {
             st = new StringTokenizer(br.readLine(), " ");
             int fromX = Integer.parseInt(st.nextToken()) - 1;
@@ -35,137 +44,131 @@ public class Main {
             int toX = Integer.parseInt(st.nextToken()) - 1;
             int toY = Integer.parseInt(st.nextToken()) - 1;
 
-            int distanceToDestination = -1;
-            Queue<int[]> queue = new LinkedList<>();
-            boolean[][] visited = new boolean[n][n];
-            queue.add(new int[] {fromX, fromY});
-            visited[fromX][fromY] = true;
-            boolean isArrived = false;
-
-            while (!queue.isEmpty()) {
-                int size = queue.size();
-                distanceToDestination++;
-                for (int j = 0; j < size; j++) {
-                    int[] cur = queue.poll();
-                    int curX = cur[0];
-                    int curY = cur[1];
-
-                    if (curX == toX && curY == toY) {
-                        isArrived = true;
-                        break;
-                    }
-
-                    for (int l = 0; l < 4; l++) {
-                        int nextX = curX + dx[l];
-                        int nextY = curY + dy[l];
-
-                        if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n || visited[nextX][nextY] || map[nextX][nextY] == 1)
-                            continue;
-
-                        visited[nextX][nextY] = true;
-                        queue.add(new int[] {nextX, nextY});
-                    }
-                }
-                if (isArrived)
-                    break;
-            }
-
-            if (isArrived)
-                passengers[i] = new Passenger(i, fromX, fromY, toX, toY, 0, distanceToDestination, false);
-            else
-                passengers[i] = new Passenger(i, fromX, fromY, toX, toY, 0, -1, false);
+            fromMap[fromX][fromY] = i;
+            passengers[i] = new Passenger(i, fromX, fromY, toX, toY, false);
         }
 
-
-        int[][] passengerMap = new int[n][n];
-        for (int i = 1; i <= m; i++) {
-            passengerMap[passengers[i].fromX][passengers[i].fromY] = i;
-        }
+        boolean possible = true;
         int turn = 0;
         while (turn < m) {
             turn++;
-            ArrayList<Passenger> passengerList = new ArrayList<>();
-            // estimate the distance to taxi
-            int distanceToPassenger = -1;
-            if (passengerMap[taxi.posX][taxi.posY] > 0) {
-                distanceToPassenger = 0;
-                passengerList.add(passengers[passengerMap[taxi.posX][taxi.posY]]);
-            } else {
+
+            // 1. 태울 승객 찾기
+            if (fromMap[taxiX][taxiY] == 0) {
                 Queue<int[]> queue = new LinkedList<>();
                 boolean[][] visited = new boolean[n][n];
-                queue.add(new int[] {taxi.posX, taxi.posY});
-                visited[taxi.posX][taxi.posY] = true;
-                boolean isArrived = false;
-                while (!queue.isEmpty()) {
+                queue.add(new int[]{taxiX, taxiY});
+                visited[taxiX][taxiY] = true;
+                ArrayList<int[]> candidates = new ArrayList<>();
+                int distance = 0;
+
+                boolean found = false;
+                while (!queue.isEmpty() && !found) {
                     int size = queue.size();
-                    distanceToPassenger++;
+                    distance++;
                     for (int j = 0; j < size; j++) {
                         int[] cur = queue.poll();
                         int curX = cur[0];
                         int curY = cur[1];
 
-                        for (int l = 0; l < 4; l++) {
-                            int nextX = curX + dx[l];
-                            int nextY = curY + dy[l];
+                        for (int i = 0; i < 4; i++) {
+                            int nextX = curX + dx[i];
+                            int nextY = curY + dy[i];
 
-                            if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n || visited[nextX][nextY] || map[nextX][nextY] == 1)
+                            if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n ||
+                                    map[nextX][nextY] == 1 || visited[nextX][nextY])
                                 continue;
 
-                            if (passengerMap[nextX][nextY] > 0) {
-                                distanceToPassenger++;
-                                passengerList.add(passengers[passengerMap[nextX][nextY]]);
-                                isArrived = true;
+                            if (fromMap[nextX][nextY] > 0 && !passengers[fromMap[nextX][nextY]].isDelivered) {
+                                candidates.add(new int[]{nextX, nextY, distance});
+                                found = true;
                             }
 
                             visited[nextX][nextY] = true;
-                            queue.add(new int[] {nextX, nextY});
+                            queue.add(new int[]{nextX, nextY});
                         }
                     }
-                    if (isArrived)
-                        break;
+                }
+
+                if (candidates.isEmpty()) {
+                    possible = false;
+                    break;
+                }
+
+                candidates.sort((o1, o2) -> {
+                    if (o1[0] != o2[0]) return o1[0] - o2[0];
+                    return o1[1] - o2[1];
+                });
+
+                int d = candidates.get(0)[2];
+                fuel -= d;
+                if (fuel < 0) {
+                    possible = false;
+                    break;
+                }
+
+                taxiX = candidates.get(0)[0];
+                taxiY = candidates.get(0)[1];
+            }
+
+            int passengerNum = fromMap[taxiX][taxiY];
+            Passenger p = passengers[passengerNum];
+
+            // 2. 목적지까지 이동
+            Queue<int[]> queue = new LinkedList<>();
+            boolean[][] visited = new boolean[n][n];
+            queue.add(new int[]{taxiX, taxiY});
+            visited[taxiX][taxiY] = true;
+            boolean canMove = false;
+            int targetX = -1;
+            int targetY = -1;
+            int distance = 0;
+
+            while (!queue.isEmpty() && !canMove) {
+                int size = queue.size();
+                distance++;
+                for (int i = 0; i < size; i++) {
+                    int[] cur = queue.poll();
+                    int curX = cur[0];
+                    int curY = cur[1];
+
+                    for (int j = 0; j < 4; j++) {
+                        int nextX = curX + dx[j];
+                        int nextY = curY + dy[j];
+
+                        if (nextX < 0 || nextX >= n || nextY < 0 || nextY >= n ||
+                                map[nextX][nextY] == 1 || visited[nextX][nextY])
+                            continue;
+
+                        if (nextX == p.toX && nextY == p.toY) {
+                            canMove = true;
+                            targetX = nextX;
+                            targetY = nextY;
+                            break;
+                        }
+
+                        visited[nextX][nextY] = true;
+                        queue.add(new int[]{nextX, nextY});
+                    }
+
+                    if (canMove) break;
                 }
             }
 
-            if (passengerList.size() > 1) {
-                Collections.sort(passengerList, new Comparator<Passenger>() {
-                    @Override
-                    public int compare(Passenger o1, Passenger o2) {
-                        if (o1.fromX != o2.fromX)
-                            return o1.fromX - o2.fromX;
-                        else
-                            return o1.fromY - o2.fromY;
-                    }
-                });
-            } else if (passengerList.size() == 1) {
-            } else
-                break;
-            passengers[passengerList.get(0).num].distanceToTaxi = distanceToPassenger;
-            passengers[passengerList.get(0).num].distanceToTaxi -= (passengerList.size() - 1);
-            passengerMap[passengerList.get(0).fromX][passengerList.get(0).fromY] = 0;
-            int curUsedFuel = passengerList.get(0).distanceToTaxi + passengerList.get(0).distanceToDestination;
-            if (curUsedFuel > taxi.fuel || passengerList.get(0).distanceToDestination == -1)
-                break;
-            else {
-                passengers[passengerList.get(0).num].isDelivered = true;
-                taxi.posX = passengerList.get(0).toX;
-                taxi.posY = passengerList.get(0).toY;
-                taxi.fuel -= curUsedFuel;
-                taxi.fuel += (passengerList.get(0).distanceToDestination * 2);
-            }
-        }
-
-        boolean allMoved = true;
-        for (int i = 1; i <= m; i++) {
-            if (!passengers[i].isDelivered) {
-                allMoved = false;
+            if (!canMove || fuel < distance) {
+                possible = false;
                 break;
             }
+
+            fuel -= distance;            
+            fuel += distance * 2;          
+            p.isDelivered = true;
+            fromMap[taxiX][taxiY] = 0;  
+            taxiX = targetX;
+            taxiY = targetY;
         }
 
-        if (allMoved)
-            System.out.println(taxi.fuel);
-        else
-            System.out.println(-1);
+        System.out.println(possible ? fuel : -1);
     }
 
     private static class Passenger {
@@ -174,31 +177,15 @@ public class Main {
         int fromY;
         int toX;
         int toY;
-        int distanceToTaxi;
-        int distanceToDestination;
         boolean isDelivered;
 
-        private Passenger(int num, int fromX, int fromY, int toX, int toY, int distanceToTaxi, int distanceToDestination, boolean isDelivered) {
+        Passenger(int num, int fromX, int fromY, int toX, int toY, boolean isDelivered) {
             this.num = num;
             this.fromX = fromX;
             this.fromY = fromY;
             this.toX = toX;
             this.toY = toY;
-            this.distanceToTaxi = distanceToTaxi;
-            this.distanceToDestination = distanceToDestination;
             this.isDelivered = isDelivered;
-        }
-    }
-
-    private static class Taxi {
-        int posX;
-        int posY;
-        int fuel;
-
-        private Taxi(int posX, int posY, int fuel) {
-            this.posX = posX;
-            this.posY = posY;
-            this.fuel = fuel;
         }
     }
 }
